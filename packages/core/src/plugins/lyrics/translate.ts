@@ -1,5 +1,7 @@
 import logger from 'electron-timber';
 import lyrics from 'simple-get-lyrics';
+import translate from 'google-translate-open-api';
+import { getOption } from '../../index';
 
 import LyricsProvider from '../lyricsProvider';
 
@@ -14,12 +16,21 @@ class TranslateLyricsProvider extends LyricsProvider {
   }
 
   search(artistName: string, trackName: string): string {
+    const toTranslate = getOption('language').split('-')[0].split('_')[0];
+
     return lyrics.search(artistName, trackName)
-      .then(function(result) {
-        console.warn(result.lyrics); /* translate.translate("I speak English", {to: 'fr'})
-        .then(res => {console.warn(res.text); })
-        .catch(err => {console.error(err); }) ;*/ return 'translated lyrics'; 
-      }).catch(function (err) {
+      .then(result => {
+        return translate(result.lyrics, {to: toTranslate})
+          .then(res => { 
+            if (res.data[1] === toTranslate) {
+              return result.lyrics; 
+            }
+            return res.data[0]; 
+          }).catch(function (err) {
+            logger.log('error', err); return result.lyrics;
+          });
+      })
+      .catch(function (err) {
         logger.log('error', err);
       });
   }
