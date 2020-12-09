@@ -18,11 +18,12 @@ class TranslateNotEngLyricsProvider extends LyricsProvider {
   search(artistName: string, trackName: string): string {
     const toTranslate = getOption('language').split('-')[0].split('_')[0];
 
+  
     return lyrics.search(artistName, trackName)
       .then(result => {
         return translate(result.lyrics, {to: toTranslate})
           .then(res => { 
-            if (res.data[1] === toTranslate) {
+            if (res.data[1] === toTranslate || 'en'===toTranslate) {
               return result.lyrics; 
             }
             return res.data[0]; 
@@ -33,6 +34,7 @@ class TranslateNotEngLyricsProvider extends LyricsProvider {
       .catch(function (err) {
         logger.log('error', err);
       });
+    
   }
 }
 
